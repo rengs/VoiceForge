@@ -256,7 +256,8 @@ VoiceForge 的目标不是简单复制成熟商业软件，而是提供一个**�
 - 安装 ASR/LLM 模型时需要联网下载依赖，安装完成后的本地处理才可离线运行。
 - 当前 App 使用本机签名构建，尚未提供 Developer ID 公证、自动更新、
   企业集中策略或第三方安全认证。
-- 仓库当前应补充明确的 `LICENSE` 后，再界定第三方复制、修改和分发权限。
+- VoiceForge 自有源代码采用 Apache License 2.0；第三方依赖、运行时和下载
+  模型仍分别遵循其各自的许可证与使用条款。
 
 商业产品的优势同样明确：Typeless 和 Wispr Flow 提供更成熟的跨平台客户端、
 持续更新、商业支持以及企业合规能力。VoiceForge 的选择逻辑是用一定的自行
@@ -299,3 +300,12 @@ VoiceForge/
 ```
 
 架构与扩展约定见 [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)。
+
+## 许可证
+
+VoiceForge 自有源代码依据 [Apache License 2.0](LICENSE) 授权。该许可证允许
+使用、修改和分发，并包含明确的版权保留、变更声明及专利授权条款。
+
+FunASR、ModelScope、PyTorch、SenseVoice、Ollama 以及其他第三方依赖、
+运行时和下载模型不因此自动改为 Apache License 2.0；使用或分发时请同时遵守
+它们各自的许可证、模型许可和服务条款。项目版权与归属声明见 [NOTICE](NOTICE)。
