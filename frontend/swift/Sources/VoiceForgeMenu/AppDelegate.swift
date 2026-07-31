@@ -197,13 +197,32 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                         )
                     }
                 case .failure(let error):
+                    let message = error.localizedDescription
                     self.updateState(
-                        "● Processing Error",
-                        error: error.localizedDescription
+                        self.processingErrorTitle(for: message),
+                        error: message
                     )
                 }
             }
         }
+    }
+
+    private func processingErrorTitle(for message: String) -> String {
+        if message.contains("时间过短") {
+            return "● 录音时间过短"
+        }
+        if message.contains("音量过低") || message.contains("几乎没有声音") {
+            return "● 录音音量过低"
+        }
+        if message.contains("未采集到音频") {
+            return "● 未采集到音频"
+        }
+        if message.contains("未识别到清晰语音")
+            || message.contains("没有识别到文字")
+        {
+            return "● 未识别到语音"
+        }
+        return "● 语音处理失败"
     }
 
     private func updateState(_ title: String, error: String? = nil) {

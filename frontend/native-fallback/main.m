@@ -19,6 +19,7 @@
 @property(nonatomic, assign) BOOL stopRequested;
 @property(nonatomic, assign) BOOL lastInjectionCopied;
 @property(nonatomic, strong) NSTimer *recordingWatchdog;
+- (NSString *)processingErrorStateForMessage:(NSString *)message;
 @end
 
 static OSStatus VFHotKeyCallback(
@@ -510,10 +511,12 @@ static OSStatus VFHotKeyCallback(
             dispatch_async(dispatch_get_main_queue(), ^{
                 if (error) {
                     self.busy = NO;
+                    NSString *message = error.localizedDescription;
                     [self appendHotkeyLog:[NSString stringWithFormat:
-                        @"processing error: %@", error.localizedDescription]];
-                    [self updateState:@"● Processing Error"
-                        error:error.localizedDescription];
+                        @"processing error: %@", message]];
+                    [self updateState:
+                        [self processingErrorStateForMessage:message]
+                        error:message];
                     return;
                 }
                 NSString *text = result[@"text"];
@@ -624,6 +627,24 @@ static OSStatus VFHotKeyCallback(
         }
     ];
     [task resume];
+}
+
+- (NSString *)processingErrorStateForMessage:(NSString *)message {
+    if ([message containsString:@"时间过短"]) {
+        return @"● 录音时间过短";
+    }
+    if ([message containsString:@"音量过低"]
+        || [message containsString:@"几乎没有声音"]) {
+        return @"● 录音音量过低";
+    }
+    if ([message containsString:@"未采集到音频"]) {
+        return @"● 未采集到音频";
+    }
+    if ([message containsString:@"未识别到清晰语音"]
+        || [message containsString:@"没有识别到文字"]) {
+        return @"● 未识别到语音";
+    }
+    return @"● 语音处理失败";
 }
 
 - (void)updateState:(NSString *)state error:(NSString *)error {

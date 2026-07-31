@@ -118,7 +118,9 @@ class VoiceForgeService:
     ) -> ProcessResult:
         text = self._processor.process(raw_text)
         if not text:
-            raise RuntimeError("没有识别到文字。")
+            raise RuntimeError(
+                "未识别到清晰语音，请靠近麦克风、清晰讲话后重试。"
+            )
         self._events.publish("voice.text.received", {"text": text, "model": model})
         decision = self._router.route(
             text,

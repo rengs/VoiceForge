@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import wave
+from math import log10
 from pathlib import Path
 from threading import Lock
 from time import monotonic, sleep, time
@@ -11,6 +12,9 @@ import sounddevice as sd
 
 
 class AudioRecorder:
+    _minimum_duration_seconds = 0.8
+    _minimum_rms = 0.002
+
     def __init__(
         self,
         recordings_dir: Path,
@@ -23,6 +27,7 @@ class AudioRecorder:
         self._stream: Any | None = None
         self._chunks: list[np.ndarray] = []
         self._input_sample_rate = target_sample_rate
+        self._input_device_name = "系统默认输入设备"
         self._lock = Lock()
         self._started_at = 0.0
 
@@ -57,6 +62,9 @@ class AudioRecorder:
                 raise RuntimeError("已经在录音。")
             device_info = sd.query_devices(self._device, "input")
             self._input_sample_rate = int(device_info["default_samplerate"])
+            self._input_device_name = str(
+                device_info.get("name", "系统默认输入设备")
+            )
             self._chunks = []
             self._stream = sd.InputStream(
                 device=self._device,
@@ -97,12 +105,30 @@ class AudioRecorder:
             self._chunks = []
 
         if not chunks:
-            raise RuntimeError("没有采集到音频，请检查麦克风权限。")
+            raise RuntimeError(
+                "未采集到音频（麦克风没有返回数据），请检查麦克风权限和输入设备。"
+            )
         samples = np.concatenate(chunks)
         samples = self._resample(samples, self._input_sample_rate)
-        peak = float(np.max(np.abs(samples))) if samples.size else 0.0
-        if peak < 0.001:
-            raise RuntimeError("录音几乎没有声音，请检查输入设备。")
+        duration_seconds = samples.size / self._target_sample_rate
+        if duration_seconds < self._minimum_duration_seconds:
+            raise RuntimeError(
+                f"录音时间过短（{duration_seconds:.1f} 秒），"
+                "请按住快捷键至少 1 秒并讲话。"
+            )
+
+        rms = (
+            float(np.sqrt(np.mean(np.square(samples, dtype=np.float64))))
+            if samples.size
+            else 0.0
+        )
+        if rms < self._minimum_rms:
+            volume_db = 20 * log10(max(rms, 0.000001))
+            raise RuntimeError(
+                f"录音音量过低（平均 {volume_db:.0f} dB，"
+                f"输入设备：{self._input_device_name}），"
+                "请检查麦克风是否静音或输入设备是否正确。"
+            )
 
         self._recordings_dir.mkdir(parents=True, exist_ok=True)
         path = self._recordings_dir / f"recording-{int(time() * 1000)}.wav"

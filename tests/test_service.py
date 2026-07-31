@@ -1,3 +1,5 @@
+import pytest
+
 from backend.service import ServiceState
 
 
@@ -23,3 +25,8 @@ def test_push_to_talk_pipeline(service) -> None:
     result = service.stop_and_process()
     assert result.text == "今天完成智能采油项目方案编制。"
     assert service.status()["state"] == ServiceState.READY
+
+
+def test_reports_when_asr_returns_no_clear_speech(service) -> None:
+    with pytest.raises(RuntimeError, match="未识别到清晰语音"):
+        service.process_text("")
