@@ -47,7 +47,7 @@ def create_app(runtime: Runtime | None = None) -> FastAPI:
 
     app = FastAPI(
         title="VoiceForge",
-        version="0.1.0",
+        version="0.9.0",
         description="Local-first Chinese voice input service",
         lifespan=lifespan,
     )
