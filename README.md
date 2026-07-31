@@ -32,8 +32,12 @@ VoiceForge 是面向 macOS Apple Silicon 的本地优先中文语音输入助手
 
 ## 一键安装
 
+首次安装时，推荐将项目放到当前用户的默认目录 `~/VoiceForge`，不依赖开发者
+本机的磁盘路径：
+
 ```bash
-cd "/Users/rengs/Nutstore Files/我的坚果云/VoiceForge"
+git clone https://github.com/rengs/VoiceForge.git "$HOME/VoiceForge"
+cd "$HOME/VoiceForge"
 ./install.sh
 ```
 
@@ -202,6 +206,68 @@ Swift 客户端单独构建：
 - Memory 数据库位于 `data/voiceforge.sqlite3`。
 - 只有 Agent 任务会把文本发送给 `.env` 中配置的 LLM。
 - 使用本地 Ollama 时，Agent 文本同样不离开本机。
+
+## 与 Typeless、Wispr Flow 对标
+
+> 对标基准：2026-07-31。商业软件的功能、价格和隐私政策可能随地区、
+> 计费周期及版本变化，实际信息以各厂商官方页面为准。
+
+VoiceForge 的目标不是简单复制成熟商业软件，而是提供一个**本地优先、
+无需厂商账号、数据和模型由用户控制、没有内置订阅费与字数配额**的语音输入
+方案。Typeless 和 Wispr Flow 在跨平台体验、实时交互、团队管理、企业合规和
+商业支持方面更成熟；VoiceForge 更适合重视数据主权、离线能力、成本可控和
+可审查性的个人或内部环境。
+
+| 对比项 | VoiceForge | Typeless | Wispr Flow |
+| --- | --- | --- | --- |
+| 核心定位 | 本地优先、可自行部署和维护 | 商业化 AI 语音输入服务 | 商业化跨平台语音输入服务 |
+| 语音与 AI 处理 | 默认使用本地 SenseVoice/FunASR；Agent 可使用本地 Ollama | 官方强调零云端数据留存、内容不用于训练和历史记录保存在设备端；这不等同于承诺全部推理均在本机完成 | 官方说明语音转写在云端完成，需要联网 |
+| 账号依赖 | 无需注册厂商账号 | 采用商业账号与套餐体系 | 采用商业账号与套餐体系 |
+| 数据留存 | 音频、历史和 Memory 保存在用户自己的磁盘，不默认上传第三方 | 官方声明零云端数据留存、设备端历史记录和用户可控听写历史 | 开启 Privacy Mode 并关闭 Private Cloud Sync 后可实现零数据留存；转写过程仍经过其云端 |
+| 模型与服务自控 | ASR 模型、本地 LLM、OpenAI-compatible 服务和数据目录均可自行配置 | 模型和服务能力由厂商管理 | 模型和服务能力由厂商管理 |
+| 离线能力 | 模型安装完成后，普通听写和本地 Ollama Agent 可离线使用 | 以厂商当前客户端与服务策略为准 | 官方说明转写需要互联网连接 |
+| 使用费用 | VoiceForge 不收订阅费、不按字数计费；用户承担本机硬件、电力、存储及可选云 API 费用 | 免费版每周 8,000 字；Pro 官方标价为按年付 $12/用户/月或按月付 $30/用户/月 | Basic 桌面端每周 2,000 字；Pro 官方标价为 $15/用户/月，年付方案通常有折扣 |
+| 字数限制 | 无产品内置字数上限，速度和容量取决于本机 | 免费版有周配额，Pro 提供更高或无限使用权益 | Basic 有周配额，Pro 提供无限字数 |
+| 平台覆盖 | 当前为 Apple Silicon macOS；Windows 11 版本尚待迁移 | 官方提供 Mac、Windows、iOS、Android | 官方提供 Mac、Windows、iOS、Android |
+| 企业能力 | 当前无集中管理、SLA 或正式合规认证 | 官方列出 HIPAA、GDPR、ISO 27001 等安全与合规能力 | Enterprise 提供集中策略、SOC 2 Type II、ISO 27001、HIPAA 等能力 |
+| 可审查与可维护性 | 代码、配置、模型和运行日志均在用户控制的仓库与设备内，可自行审查和维护 | 闭源商业产品，维护和升级由厂商负责 | 闭源商业产品，维护和升级由厂商负责 |
+
+### VoiceForge 的主要优势
+
+1. **安全边界更小**：后端只监听 `127.0.0.1`，普通听写无需把音频发送到
+   第三方服务，也不需要登录厂商账号。
+2. **隐私由用户掌控**：录音、识别结果、专业词库和 Memory 都保存在本机；
+   使用本地 Ollama 时，Agent 文本也无需离开设备。
+3. **模型和服务可自控**：可以自行选择 ASR、Ollama 模型或
+   OpenAI-compatible 服务，不被单一厂商的模型、定价和停服策略锁定。
+4. **费用可预测**：没有 VoiceForge 订阅费、席位费或每周字数限制；本地使用
+   的主要成本是已有电脑的计算、存储和电力。
+5. **可审查、可改造**：快捷键、意图路由、Agent、词库、数据保留和输入方式
+   均可按个人或单位要求修改，适合内网或强数据主权场景。
+
+### 安全与隐私边界
+
+“本地优先”不等于“自动达到企业安全认证”。当前版本需要用户了解以下边界：
+
+- `data/recordings/` 和 `data/voiceforge.sqlite3` 默认未做应用层加密；建议开启
+  macOS FileVault、使用独立系统账号并定期清理不再需要的录音。
+- 配置 OpenAI-compatible 云服务后，Agent 文本会发送到该服务；具体留存与
+  训练策略取决于所选服务商。
+- 安装 ASR/LLM 模型时需要联网下载依赖，安装完成后的本地处理才可离线运行。
+- 当前 App 使用本机签名构建，尚未提供 Developer ID 公证、自动更新、
+  企业集中策略或第三方安全认证。
+- 仓库当前应补充明确的 `LICENSE` 后，再界定第三方复制、修改和分发权限。
+
+商业产品的优势同样明确：Typeless 和 Wispr Flow 提供更成熟的跨平台客户端、
+持续更新、商业支持以及企业合规能力。VoiceForge 的选择逻辑是用一定的自行
+安装和维护成本，换取更高的数据自主权、模型自主权和长期费用控制。
+
+官方参考：
+
+- [Typeless Pricing](https://www.typeless.com/pricing)
+- [Wispr Flow Plans & Pricing](https://wisprflow.ai/business)
+- [Wispr Flow Privacy Policy](https://wisprflow.ai/privacy)
+- [Wispr Flow Enterprise](https://docs.wisprflow.ai/articles/9406031800-sign-up-for-flow-enterprise)
 
 ## 当前实时语义
 
