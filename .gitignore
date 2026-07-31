@@ -1,0 +1,14 @@
+.DS_Store
+.env
+.venv/
+.build-local/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+*.log
+*.wav
+.voiceforge/
+data/
+dist/
+frontend/swift/.build/

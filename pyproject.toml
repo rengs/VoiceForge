@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "voiceforge"
+version = "0.1.0"
+description = "Local-first macOS Chinese voice input assistant"
+requires-python = ">=3.10,<3.13"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "numpy>=1.26,<3",
+  "sounddevice>=0.5,<1",
+  "uvicorn>=0.34,<1",
+]
+
+[project.optional-dependencies]
+asr = [
+  "funasr>=1.2,<2",
+  "modelscope>=1.22,<2",
+  "torch>=2.2,<3",
+  "torchaudio>=2.2,<3",
+]
+test = [
+  "httpx>=0.28,<1",
+  "pytest>=8,<9",
+]
+
+[project.scripts]
+voiceforge = "backend.main:cli"
+
+[tool.setuptools.packages.find]
+include = ["backend*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
