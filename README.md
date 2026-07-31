@@ -48,7 +48,8 @@ cd "$HOME/VoiceForge"
    与测试依赖；
 3. 下载 SenseVoiceSmall；
 4. 从 Ollama 官方安装用户级运行时并下载低延迟的 `qwen2.5:3b`；
-5. 构建并签名 `VoiceForge.app`；
+5. 创建仅用于本机开发的持久代码签名身份，并构建、签名
+   `VoiceForge.app`；
 6. 安装到 `~/Applications/VoiceForge.app`；
 7. 运行全部后端测试。
 
@@ -254,9 +255,10 @@ VoiceForge 的目标不是简单复制成熟商业软件，而是提供一个**�
 - 配置 OpenAI-compatible 云服务后，Agent 文本会发送到该服务；具体留存与
   训练策略取决于所选服务商。
 - 安装 ASR/LLM 模型时需要联网下载依赖，安装完成后的本地处理才可离线运行。
-- 当前 App 使用带稳定 Bundle ID 规则的本机临时签名，避免普通重建反复失去
-  辅助功能授权；尚未提供 Developer ID 公证、自动更新、企业集中策略或
-  第三方安全认证。
+- 当前 App 使用登录钥匙串中的 `VoiceForge Local Code Signing` 本机持久签名
+  身份，避免普通重建反复失去辅助功能授权。该身份仅用于本机，不等同于
+  Apple Developer ID；项目尚未提供公证、自动更新、企业集中策略或第三方
+  安全认证。
 - VoiceForge 自有源代码采用 Apache License 2.0；第三方依赖、运行时和下载
   模型仍分别遵循其各自的许可证与使用条款。
 

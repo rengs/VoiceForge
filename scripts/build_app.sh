@@ -3,8 +3,8 @@ set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SWIFT_DIR="$PROJECT_DIR/frontend/swift"
-APP_DIR="$PROJECT_DIR/dist/VoiceForge.app"
 BUILD_DIR="$PROJECT_DIR/.build-local"
+APP_DIR="$BUILD_DIR/VoiceForge.app"
 SOURCES=("$SWIFT_DIR"/Sources/VoiceForgeMenu/*.swift)
 FALLBACK_SOURCE="$PROJECT_DIR/frontend/native-fallback/main.m"
 
@@ -48,7 +48,14 @@ cp "$BUILD_DIR/VoiceForgeMenu" \
   "$APP_DIR/Contents/MacOS/VoiceForgeMenu"
 cp "$SWIFT_DIR/Resources/Info.plist" "$APP_DIR/Contents/Info.plist"
 
-SIGNING_IDENTITY="${VOICEFORGE_SIGNING_IDENTITY:--}"
+LOCAL_SIGNING_IDENTITY="VoiceForge Local Code Signing"
+SIGNING_IDENTITY="${VOICEFORGE_SIGNING_IDENTITY:-}"
+if [[ -z "$SIGNING_IDENTITY" ]] && security find-identity \
+    -p codesigning "$HOME/Library/Keychains/login.keychain-db" 2>/dev/null |
+    grep -Fq "\"$LOCAL_SIGNING_IDENTITY\""; then
+  SIGNING_IDENTITY="$LOCAL_SIGNING_IDENTITY"
+fi
+SIGNING_IDENTITY="${SIGNING_IDENTITY:--}"
 BUNDLE_IDENTIFIER="$(
   /usr/libexec/PlistBuddy \
     -c "Print :CFBundleIdentifier" \
@@ -69,7 +76,6 @@ else
   codesign \
     --force \
     --deep \
-    --options runtime \
     --sign "$SIGNING_IDENTITY" \
     "$APP_DIR"
 fi

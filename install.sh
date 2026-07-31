@@ -43,6 +43,10 @@ if [[ "${VOICEFORGE_SKIP_LLM_INSTALL:-0}" != "1" ]]; then
   "$PROJECT_DIR/scripts/install_ollama.sh"
 fi
 
+if [[ "${VOICEFORGE_SKIP_LOCAL_SIGNING:-0}" != "1" ]]; then
+  "$PROJECT_DIR/scripts/install_signing_identity.sh"
+fi
+
 "$PROJECT_DIR/scripts/build_app.sh"
 "$VENV_DIR/bin/python" -m pytest
 
