@@ -47,7 +47,32 @@ mkdir -p "$APP_DIR/Contents/MacOS" "$APP_DIR/Contents/Resources"
 cp "$BUILD_DIR/VoiceForgeMenu" \
   "$APP_DIR/Contents/MacOS/VoiceForgeMenu"
 cp "$SWIFT_DIR/Resources/Info.plist" "$APP_DIR/Contents/Info.plist"
-codesign --force --deep --sign - "$APP_DIR"
+
+SIGNING_IDENTITY="${VOICEFORGE_SIGNING_IDENTITY:--}"
+BUNDLE_IDENTIFIER="$(
+  /usr/libexec/PlistBuddy \
+    -c "Print :CFBundleIdentifier" \
+    "$APP_DIR/Contents/Info.plist"
+)"
+if [[ "$SIGNING_IDENTITY" == "-" ]]; then
+  # Keep the designated requirement stable across local rebuilds. Without an
+  # explicit requirement, ad-hoc signing uses a changing cdhash and macOS TCC
+  # treats every build as a new app, invalidating Accessibility permission.
+  LOCAL_REQUIREMENT="=designated => identifier \"$BUNDLE_IDENTIFIER\""
+  codesign \
+    --force \
+    --deep \
+    --sign - \
+    --requirements "$LOCAL_REQUIREMENT" \
+    "$APP_DIR"
+else
+  codesign \
+    --force \
+    --deep \
+    --options runtime \
+    --sign "$SIGNING_IDENTITY" \
+    "$APP_DIR"
+fi
 
 mkdir -p "$HOME/Applications"
 ditto "$APP_DIR" "$HOME/Applications/VoiceForge.app"
